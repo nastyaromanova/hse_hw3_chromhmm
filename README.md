@@ -43,6 +43,32 @@ RefSeqTSS | RefSeqTES | Emission | Overlap | Transition
 
 **Cостояние 11-15** выражены неявно или их вовсе нет.
 
+## Список запущенных команд
+
+- Создаем и заполняем файл `cellmarkfiletable.txt`.
+```
+!touch cellmarkfiletable.txt
+
+import os
+
+control = 'Control.bam'
+
+with open(f'cellmarkfiletable.txt', 'a') as cell_file:
+  for file in os.listdir():
+    if "Control" not in file and str(file).split('.')[-1] == 'bam':
+      cell_file.write(f'A549\t{file[:-4]}\t{file}\t{control}\n')
+```
+
+- Конвертируем профили из ChIP-seq экспериментов в таблицу из 0 и 1
+```
+!java -mx5000M -jar /content/ChromHMM/ChromHMM.jar BinarizeBam -b 200  /content/ChromHMM/CHROMSIZES/hg19.txt /content/ cellmarkfiletable.txt   binarizedData
+```
+
+- Определяем 10 разных эпигенетических типов с наиболее выраженными наборами гистоновых меток и присваиваем каждому геномному интервалу определенный эпигенетический тип
+```
+!java -mx5000M -jar /content/ChromHMM/ChromHMM.jar LearnModel -b 200 /content/binarizedData/ /content/data 10 hg19
+```
+
 ## Бонусная часть
 
 ![Image](data/histone_modify_bonus.png)
